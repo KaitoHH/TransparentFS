@@ -1,5 +1,7 @@
 import os
 
+from BaseFS import BaseFS
+
 block_numbers = 16 * 16 * 16
 
 
@@ -8,12 +10,13 @@ class TFSFileMeta(object):
         NORMAL = 0
         CONTRIB = 1
 
-    def __init__(self, block_offset, file_type):
+    def __init__(self, block_offset, length, file_type):
         self.offset = block_offset
+        self.length = length
         self.type = file_type
 
 
-class TFS(object):
+class TFS(BaseFS):
     FREE = 0
     TRANSPARENT = 1
     ALLOCATED = 2
@@ -50,12 +53,12 @@ class TFS(object):
 
     def add_normal_file(self, filename, blocks):
         offset = self.allocate_normal_file_block(blocks)
-        self.fileList[filename] = TFSFileMeta(offset, TFSFileMeta.FileType.NORMAL)
+        self.fileList[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.NORMAL)
         self.batch_update_block_status(offset, blocks, TFS.ALLOCATED)
 
     def add_contrib_file(self, filename, blocks):
         offset = self.allocate_transparent_file_block(blocks)
-        self.fileList[filename] = TFSFileMeta(offset, TFSFileMeta.FileType.CONTRIB)
+        self.fileList[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.CONTRIB)
         self.batch_update_block_status(offset, blocks, TFS.TRANSPARENT)
 
     def view_top_n_status(self, n):
