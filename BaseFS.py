@@ -10,3 +10,9 @@ class BaseFS(object):
 
     def delete_contrib_file(self, filename):
         raise NotImplementedError
+
+    def stat_normal_file(self, filename):
+        raise NotImplementedError
+
+    def stat_contrib_file(self, filename):
+        raise NotImplementedError

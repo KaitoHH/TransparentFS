@@ -8,10 +8,14 @@ class TFSFileMeta(object):
         NORMAL = 0
         CONTRIB = 1
 
-    def __init__(self, block_offset, length, file_type):
+    def __init__(self, block_offset, length, file_type, filename):
+        self.filename = filename
         self.offset = block_offset
         self.length = length
         self.type = file_type
+
+    def __str__(self):
+        return 'META: {}, +{} ({})'.format(self.filename, self.offset, self.length)
 
 
 class TFS(BaseFS):
@@ -52,26 +56,55 @@ class TFS(BaseFS):
     def batch_update_block_status(self, offset, length, operation, fn=lambda s: True):
         for pos in range(offset, offset + length):
             if fn(self.bitmap[pos]):
-                self.bitmap[pos] = TFSFileStateMachine.apply(self.bitmap[pos], operation)
+                after = TFSFileStateMachine.apply(self.bitmap[pos], operation)
+                if after != TFS.INVALID:
+                    self.bitmap[pos] = after
+
+    def check_meta_or_cleanup(self, meta):
+        file_break = False
+        for pos in range(meta.offset, meta.offset + meta.length):
+            if self.bitmap[pos] != TFS.TRANSPARENT:
+                file_break = True
+                break
+        if file_break:
+            self.batch_update_block_status(meta.offset, meta.length, TFSFileStateMachine.Operation.CLEAN)
+        return file_break
 
     def add_normal_file(self, filename, blocks):
         offset = self.allocate_normal_file_block(blocks)
-        self.file_list[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.NORMAL)
+        self.file_list[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.NORMAL, filename)
         self.batch_update_block_status(offset, blocks, TFSFileStateMachine.Operation.WRITE)
 
     def add_contrib_file(self, filename, blocks):
         offset = self.allocate_transparent_file_block(blocks)
-        self.file_list[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.CONTRIB)
+        self.file_list[filename] = TFSFileMeta(offset, blocks, TFSFileMeta.FileType.CONTRIB, filename)
         self.batch_update_block_status(offset, blocks, TFSFileStateMachine.Operation.WRITE_CONTRIB)
 
     def delete_normal_file(self, filename):
         meta = self.file_list[filename]
         self.batch_update_block_status(meta.offset, meta.length, TFSFileStateMachine.Operation.DELETE)
+        self.file_list.pop(filename)
 
     def delete_contrib_file(self, filename):
+        if self.file_list.get(filename, None):
+            meta = self.file_list[filename]
+            self.batch_update_block_status(meta.offset, meta.length, TFSFileStateMachine.Operation.DELETE,
+                                           lambda s: s == TFS.TRANSPARENT)
+            self.file_list.pop(filename)
+        else:
+            print('file is already deleted.')
+
+    def stat_normal_file(self, filename):
         meta = self.file_list[filename]
-        self.batch_update_block_status(meta.offset, meta.length, TFSFileStateMachine.Operation.DELETE,
-                                       lambda s: s == TFS.TRANSPARENT)
+        print(meta)
+
+    def stat_contrib_file(self, filename):
+        meta = self.file_list[filename]
+        if self.check_meta_or_cleanup(meta):
+            self.delete_contrib_file(filename)
+            print('file is overwritten.')
+        else:
+            print(meta)
 
     def view_top_n_status(self, n):
         for pos in range(n):
@@ -106,13 +139,10 @@ if __name__ == '__main__':
     tfs.add_contrib_file('_b', 20)
     tfs.view_top_n_status(50)
     tfs.add_normal_file('c', 3)
-    tfs.view_top_n_status(50)
-    tfs.delete_normal_file('a')
-    tfs.delete_contrib_file('_b')
+    tfs.stat_normal_file('c')
     tfs.view_top_n_status(50)
     tfs.delete_normal_file('c')
+    tfs.stat_normal_file('a')
     tfs.view_top_n_status(50)
-    tfs.add_normal_file('d', 15)
-    tfs.view_top_n_status(50)
-    tfs.delete_normal_file('d')
+    tfs.stat_contrib_file('_b')
     tfs.view_top_n_status(50)

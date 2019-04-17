@@ -3,9 +3,13 @@ from BaseFS import BaseFS
 
 
 class NormalFSMeta(object):
-    def __init__(self, block_offset, length):
+    def __init__(self, block_offset, length, filename):
         self.block_offset = block_offset
         self.length = length
+        self.filename = filename
+
+    def __str__(self):
+        return 'META: {}, +{} ({})'.format(self.filename, self.block_offset, self.length)
 
 
 class NormalFS(BaseFS):
@@ -36,12 +40,17 @@ class NormalFS(BaseFS):
 
     def add_file(self, filename, blocks):
         offset = self.allocate_blocks(blocks)
-        self.file_list[filename] = NormalFSMeta(offset, blocks)
+        self.file_list[filename] = NormalFSMeta(offset, blocks, filename)
         self.update_blocks_status(offset, blocks, NormalFS.ALLOCATED)
 
     def delete_file(self, filename):
         meta = self.file_list[filename]
         self.update_blocks_status(meta.block_offset, meta.length, NormalFS.FREE)
+        self.file_list.pop(filename)
+
+    def stat_file(self, filename):
+        meta = self.file_list[filename]
+        print(meta)
 
     def delete_contrib_file(self, filename):
         self.delete_file(filename)
@@ -54,6 +63,12 @@ class NormalFS(BaseFS):
 
     def add_normal_file(self, filename, blocks):
         self.add_file(filename, blocks)
+
+    def stat_normal_file(self, filename):
+        self.stat_file(filename)
+
+    def stat_contrib_file(self, filename):
+        self.stat_file(filename)
 
     def view_top_n_status(self, n):
         for pos in range(n):
@@ -68,13 +83,10 @@ if __name__ == '__main__':
     nfs.add_contrib_file('_b', 20)
     nfs.view_top_n_status(50)
     nfs.add_normal_file('c', 3)
-    nfs.view_top_n_status(50)
-    nfs.delete_normal_file('a')
-    nfs.delete_contrib_file('_b')
+    nfs.stat_normal_file('c')
     nfs.view_top_n_status(50)
     nfs.delete_normal_file('c')
+    nfs.stat_normal_file('a')
     nfs.view_top_n_status(50)
-    nfs.add_normal_file('d', 15)
-    nfs.view_top_n_status(50)
-    nfs.delete_normal_file('d')
+    nfs.stat_contrib_file('_b')
     nfs.view_top_n_status(50)
