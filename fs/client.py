@@ -1,5 +1,6 @@
-from TFS import TFS
-from NormalFS import NormalFS
+from fs.TFS import TFS
+from fs.NormalFS import NormalFS
+import config
 
 
 class BatchFSWrapper(object):
@@ -11,6 +12,7 @@ class BatchFSWrapper(object):
 
     def iterate_call(self, attr):
         def wrapper(*args, **kwargs):
+            config.global_event_recorder = {'method': attr, 'args': args}
             # print(attr, *args)
             for caller in self.caller:
                 method = caller.__getattribute__(attr)

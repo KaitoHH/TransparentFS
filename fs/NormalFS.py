@@ -1,5 +1,5 @@
 import config
-from BaseFS import BaseFS
+from fs.BaseFS import BaseFS
 
 
 class NormalFSMeta(object):
@@ -33,6 +33,7 @@ class NormalFS(BaseFS):
             else:
                 offset = -1
                 cnt = 0
+        raise LookupError
 
     def update_blocks_status(self, offset, length, status):
         for pos in range(offset, offset + length):

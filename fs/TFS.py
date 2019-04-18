@@ -1,6 +1,5 @@
-import os
 import config
-from BaseFS import BaseFS
+from fs.BaseFS import BaseFS
 
 
 class TFSFileMeta(object):
@@ -45,6 +44,7 @@ class TFS(BaseFS):
             else:
                 offset = -1
                 cnt = 0
+        raise LookupError
 
     def allocate_normal_file_block(self, blocks):
         return self.allocate_blocks(blocks,
@@ -93,7 +93,7 @@ class TFS(BaseFS):
                                            lambda s: s == TFS.TRANSPARENT)
             self.file_list.pop(filename)
         else:
-            print('file is already deleted.')
+            return 'file is already deleted.'
 
     def stat_normal_file(self, filename):
         meta = self.file_list[filename]
