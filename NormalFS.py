@@ -13,8 +13,8 @@ class NormalFSMeta(object):
 
 
 class NormalFS(BaseFS):
-    FREE = False
-    ALLOCATED = True
+    FREE = 0
+    ALLOCATED = 1
 
     def __init__(self):
         self.bitmap = [NormalFS.FREE] * config.block_numbers
@@ -50,7 +50,7 @@ class NormalFS(BaseFS):
 
     def stat_file(self, filename):
         meta = self.file_list[filename]
-        print(meta)
+        return str(meta)
 
     def delete_contrib_file(self, filename):
         self.delete_file(filename)

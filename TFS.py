@@ -88,6 +88,7 @@ class TFS(BaseFS):
     def delete_contrib_file(self, filename):
         if self.file_list.get(filename, None):
             meta = self.file_list[filename]
+            self.check_meta_or_cleanup(meta)
             self.batch_update_block_status(meta.offset, meta.length, TFSFileStateMachine.Operation.DELETE,
                                            lambda s: s == TFS.TRANSPARENT)
             self.file_list.pop(filename)
@@ -99,12 +100,15 @@ class TFS(BaseFS):
         return meta.__dict__
 
     def stat_contrib_file(self, filename):
-        meta = self.file_list[filename]
-        if self.check_meta_or_cleanup(meta):
-            self.delete_contrib_file(filename)
-            return 'file has been overwritten.'
+        meta = self.file_list.get(filename, None)
+        if meta:
+            if self.check_meta_or_cleanup(meta):
+                self.delete_contrib_file(filename)
+                return 'file has been overwritten.'
+            else:
+                return meta.__dict__
         else:
-            return meta.__dict__
+            return 'file has been overwritten.'
 
     def view_top_n_status(self, n):
         for pos in range(n):

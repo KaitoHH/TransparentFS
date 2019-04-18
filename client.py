@@ -11,6 +11,7 @@ class BatchFSWrapper(object):
 
     def iterate_call(self, attr):
         def wrapper(*args, **kwargs):
+            # print(attr, *args)
             for caller in self.caller:
                 method = caller.__getattribute__(attr)
                 method(*args, **kwargs)
@@ -23,14 +24,12 @@ if __name__ == '__main__':
     nfs = NormalFS()
     fs = BatchFSWrapper([tfs, nfs])
 
-    fs.add_normal_file('a', 10)
-    fs.add_contrib_file('_b', 20)
-    fs.add_normal_file('c', 3)
-    fs.stat_normal_file('c')
-    fs.view_top_n_status(50)
-    fs.stat_normal_file('c')
-    fs.view_top_n_status(50)
-    fs.stat_contrib_file('_b')
-    fs.view_top_n_status(50)
-    fs.delete_contrib_file('_b')
+    fs.add_normal_file('provide.odp', 2)
+    fs.add_contrib_file('share.txt', 8)
+    fs.add_contrib_file('reduce.csv', 2)
+    fs.add_contrib_file('available.js', 1)
+    fs.add_normal_file('party.numbers', 5)
+    fs.delete_normal_file('party.numbers')
+    fs.add_contrib_file('seat.wav', 8)
+    fs.delete_contrib_file('seat.wav')
     fs.view_top_n_status(50)
