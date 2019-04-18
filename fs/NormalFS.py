@@ -14,7 +14,7 @@ class NormalFSMeta(object):
 
 class NormalFS(BaseFS):
     FREE = 0
-    ALLOCATED = 1
+    ALLOCATED = 2
 
     def __init__(self):
         self.bitmap = [NormalFS.FREE] * config.block_numbers

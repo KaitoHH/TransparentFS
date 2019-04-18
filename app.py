@@ -1,8 +1,14 @@
+from flask import Flask, render_template
+from fs.TFS import TFS
+from fs.NormalFS import NormalFS
 import random
 
 from faker import Faker
 from flask import Flask
 from flask import request, jsonify
+from fs.client import BatchFSWrapper
+import os
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 import config
 from fs.NormalFS import NormalFS
@@ -11,6 +17,11 @@ from fs.client import BatchFSWrapper
 
 app = Flask(__name__)
 tfs_1 = TFS()
+
+
+@app.route('/')
+def index():
+    return render_template('ads_demo.html')
 
 
 @app.route('/1', methods=['POST'])
