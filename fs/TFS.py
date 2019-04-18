@@ -108,7 +108,7 @@ class TFS(BaseFS):
             else:
                 return meta.__dict__
         else:
-            return 'file has been overwritten.'
+            return 'file does not exist.'
 
     def view_top_n_status(self, n):
         for pos in range(n):
