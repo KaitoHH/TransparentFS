@@ -16,3 +16,7 @@ class BaseFS(object):
 
     def stat_contrib_file(self, filename):
         raise NotImplementedError
+
+    @staticmethod
+    def to_json(file_list):
+        return {key: file_list[key].__dict__ for key in file_list}
