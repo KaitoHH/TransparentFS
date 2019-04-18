@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ADS Demo</title>
+    <link rel="stylesheet" type="text/css" href="../static/semantic.min.css">
+
+</head>
+<style type="text/css">
+    .demo {
+        display: flex;
+        margin-top: 100px;
+        flex-direction: column;
+        width: 1024px;
+    }
+    .demo>div {
+        margin-bottom: 20px;
+    }
+    .demo_button_panel {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .demo_button_panel>button {
+        margin-left: 10px;
+    }
+    .demo_box {
+        display: flex;
+        height: 100px;
+        width: 1000px;
+        margin-bottom: 20px;
+    }
+    .color-indicator .block {
+        height: 20px;
+        width: 50px;
+        margin-right: 5px;
+    }
+    .color-indicator .color-block {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 5px;
+    }
+     .free {
+        background-color: white;
+    }
+     .color-block .free{
+         border: 1px solid gray;
+     }
+    .allocated {
+        background-color: black;
+    }
+    .transparent {
+        background-color: rgba(83, 253, 81, 0.41);
+    }
+    .allocated-overwrite {
+        background-color: rgba(98,177,253,0.41);
+    }
+    .free-overwrite {
+        background-color: #9c6f04;
+    }
+    .file_blocks {
+        display: flex;
+        flex-direction: row;
+        border-left: 1px solid gray;
+    }
+    .file_blocks .block {
+        height: 100px;
+        width: 4px;
+        border-right: 1px solid gray;
+        border-bottom: 1px solid gray;
+        border-top: 1px solid gray;
+    }
+    .my_tab {
+        margin-top: 20px;
+        margin-right: 200px;
+    }
+    .file_list_container {
+        padding: 5px;
+        margin-top: 40px;
+    }
+    .file_list {
+        border: 1px solid gray;
+        height: 300px;
+        margin-bottom: 20px;
+        overflow: auto;
+    }
+
+    .file_list .file {
+        display: flex;
+        border-bottom: 1px solid black;
+        padding-left: 10px;
+        justify-content: space-between;
+    }
+
+    .file_list i.icon {
+        cursor: pointer;
+    }
+    .file_list i.icon:hover {
+        color: blue;
+    }
+
+    .file_list .header {
+        border-bottom: 1px solid black;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .file_list .header .file_add {
+        padding: 5px;
+    }
+    .file_list .file_name {
+        cursor: pointer;
+    }
+</style>
+<body>
+<div>
+    <div class="my_contrainer" style="display: flex; flex-direction: row">
+        <div class="file_list_container" style="width: 200px; padding: 25px">
+            <div class="file_list tfs_list">
+                <div class="header" >
+                    <div class="ui blue label" style="padding: 5px; margin: 5px">
+                        TFS File
+                    </div>
+                    <div class="file_add">
+                        <input type="text" id="tfs_input_block" class="file-block-input" style="width: 30px">
+                        <i class="plus icon tfs_add"></i>
+                    </div>
+                </div>
+                <div class="body">
+                    <!--<div class="file" id="file_1">
+                        <div class="file_name">
+                            file_name
+                        </div>
+                        <div class="delete delete_file_btn">
+                            <i class="delete icon " ></i>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+            <div class="file_list ufs_list">
+                <div class="header">
+                    <div class="ui blue label" style="padding: 5px; margin: 5px">
+                        User File
+                    </div>
+                    <div class="file_add">
+                        <input type="text" id="ufs_input_block" class="file-block-input" style="width: 30px">
+                        <i style="cursor: pointer" class="plus icon ufs_add"></i>
+                    </div>
+                </div>
+                <div class="body">
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="my_tab">
+                <div class="ui top attached tabular menu">
+                    <a id="demo1_btn" class="item active" >Demo 1</a>
+                    <a id="demo2_btn" class="item">Demo 2</a>
+                </div>
+            </div>
+            <div class="demo">
+                <div class="color-indicator">
+                    <div class="color-block">
+                        <div class="block free">
+
+                        </div>
+                        Free
+                    </div>
+                    <div class="color-block">
+                        <div class="block transparent">
+
+                        </div>
+                        Transparent
+                    </div>
+                    <div class="color-block">
+                        <div class="block allocated">
+
+                        </div>
+                        Allocated
+                    </div>
+                    <div class="color-block">
+                        <div class="block free-overwrite">
+
+                        </div>
+                        Free-and-Overwritten
+                    </div>
+                    <div class="color-block">
+                        <div class="block allocated-overwrite">
+
+                        </div>
+                        Allocated-and-Overwritten
+                    </div>
+                </div>
+<!--                <div class="demo1 demo_button_panel">
+                    <button class="ui secondary button">Write</button>
+                    <button class="ui button">Delete</button>
+                </div>-->
+                <div class="demo1 demo_box">
+                    <div id="file_blocks" class="file_blocks">
+
+                    </div>
+                </div>
+                <div class="demo2" style="display: none" >
+                        <div class=" demo_button_panel">
+                        <div class="ui action input">
+                            <input value="1.5" style="margin-right: 5px"
+                                   id="rate" type="number" step="0.1" min="0.1" max="10" >
+                            <button id="demo2-go" class="ui icon button green"><i class="icon play"></i></button>
+                            <button style="display: none" id="demo2-pause" class="ui icon button blue"><i class="icon pause"></i> </button>
+                        </div>
+                        </div>
+                    <div class="ui blue label" style="margin-bottom: 5px">
+                        With TFS
+                    </div>
+                    <div class="demo_box">
+                        <div id="tfs_blocks" class="file_blocks">
+
+                        </div>
+                    </div>
+                    <div class="ui blue label" style="margin-bottom: 5px">
+                        Without TFS
+                    </div>
+                    <div class="demo_box">
+                        <div id="ex2_blocks" class="file_blocks">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+<script src="../static/semantic.min.js"></script>
+<script src="../static/d3.min.js"></script>
+<script src="../static/sockjs.min.js"></script>
+<script type="text/javascript">
+    $('#demo1_btn').click(function () {
+        $('#demo2_btn').removeClass('active');
+        $(this).addClass('active');
+        $('.demo1').show(500);
+        $('.demo2').hide(500);
+        $('.file_list_container').css({visibility:"visible", opacity: 0.0}).animate({opacity: 1.0},500);
+    });
+    $('#demo2_btn').click(function () {
+        $('#demo1_btn').removeClass('active');
+        $(this).addClass('active');
+        $('.demo1').hide(500);
+        $('.demo2').show(500);
+        $('.file_list_container').animate({opacity: 0.0}, 500, function(){
+            $(this).css("visibility","hidden");
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    const state_bgc_map = {
+      'free': 'white','allocated': 'black','transparent': 'rgba(83, 253, 81, 0.41)','allocated-overwrite':'rgba(98,177,253,0.41)','free-overwrite': '#9c6f04'
+    };
+    bit_state_map = {
+        0: 'free',
+        1: 'transparent',
+        2: 'allocated',
+        3: 'free-overwrite',
+        4: 'allocated-overwrite'
+    };
+    const total_blocks = 256;
+
+    init_bit_map = [];
+    for (let i = 0; i < total_blocks; i++) {
+        init_bit_map.push(0)
+    }
+    function setColor(bitmaps, blocks_prefix) {
+        const diff_indics = [];
+        for (let i = 0; i < bitmaps.length; i++) {
+            if (bitmaps[i] !== init_bit_map[i]) {
+                diff_indics.push(i)
+            }
+        }
+        for (let i = 0; i < diff_indics.length; i++) {
+            const diff_index = diff_indics[i];
+            init_bit_map[diff_index] = bitmaps[diff_index];
+            d3.select('#' + blocks_prefix + diff_index).transition().duration(500).style('background-color', state_bgc_map[bit_state_map[bitmaps[diff_index]]])
+        }
+    }
+</script>
+<script type="text/javascript">
+    var global_file_id = 1;
+    const base_url = 'http://127.0.0.1:5000';
+    function initBlocks(blocks_ele, block_prefix) {
+        for (var i = 0; i < total_blocks; i++) {
+            blocks_ele.append('div').attr('class', 'block').attr('id', block_prefix + '_block_' + i).style('background-color', state_bgc_map['free'])
+        }
+    }
+    function initDemo1Blocks() {
+        const file_blocks = d3.select('#file_blocks');
+        initBlocks(file_blocks, 'demo1');
+
+    }
+    function initDemo2Blocks() {
+        const tfs_blocks = d3.select('#tfs_blocks');
+        const without_tfs_blocks = d3.select('#ex2_blocks');
+        initBlocks(tfs_blocks, 'demo2_tfs');
+        initBlocks(without_tfs_blocks, 'demo2_nfs');
+    }
+    function construct_file_ele(file_name, file_id) {
+        return $('<div class="file " id=' + file_id + '><div class="file_name">'
+            + file_name +
+            '</div><div class="delete delete_file_btn"><i class="delete icon " ></i></div></div>')
+    }
+    function initDeleteEvent() {
+        $('.delete_file_btn').click(function () {
+            const file_name = $(this).parent().attr('id');
+            const method = $(this).parent().parent().parent().hasClass('tfs_list')? 'delete_contrib_file' : 'delete_normal_file';
+            $.ajax({
+                 url: base_url + '/1',
+                type: 'post',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({method: method,
+                    args: {
+                        filename: file_name
+                    }
+                    }),
+                success: function(data) {
+                    console.log(data);
+                    setColor(data['bitmap'], 'demo1_block_');
+                    $('#' + file_name).remove();
+                }});
+
+        });
+    }
+    function initAddEvent() {
+        $('.tfs_add').click(function () {
+            const file_name = 'test_file_' + (global_file_id++);
+            const blocks = $('#tfs_input_block').val().trim();
+            if (blocks === '' || isNaN(parseInt(blocks))) {
+                alert('Please input the valid blocks for TFS file');
+                return;
+            }
+            $.ajax({
+                 url: base_url + '/1',
+                type: 'post',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({method: 'add_contrib_file',
+                    args: {
+                        filename: file_name,
+                        blocks: Number.parseInt(blocks),
+                    }
+                    }),
+                success: function(data) {
+                    console.log(data);
+                    $('.tfs_list .body').append(construct_file_ele(file_name, file_name));
+                    setColor(data['bitmap'], 'demo1_block_')
+                    initDeleteEvent();
+                    initReadFileEvent();
+                }});
+        });
+        $('.ufs_add').click(function () {
+            const file_name = 'test_file_' + (global_file_id++);
+            const blocks = $('#ufs_input_block').val().trim();
+            if (blocks === '') {
+                alert('Please input the blocks for user file');
+                return;
+            }
+            $.ajax({
+                url: base_url + '/1',
+                type: 'post',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({method: 'add_normal_file',
+                    args: {
+                        filename: file_name,
+                        blocks: Number.parseInt(blocks),
+                    }
+                    }),
+                success: function(data) {
+                    console.log(data);
+                    $('.ufs_list .body').append(construct_file_ele(file_name, file_name));
+                    setColor(data['bitmap'], 'demo1_block_');
+                    initDeleteEvent();
+                    initReadFileEvent();
+                }});
+
+        });
+    }
+    function initReadFileEvent() {
+        $('.file_name').unbind();
+        $('.file_name').click(function () {
+            const file_name = $(this).text().trim();
+            const that = $(this);
+            const method = $(this).parent().parent().parent().hasClass('tfs_list')? 'stat_contrib_file' : 'stat_normal_file';
+            $.ajax({
+                url: base_url + '/1',
+                type: 'post',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({
+                    method: method,
+                    args: {
+                        filename: file_name
+                    }
+                }),
+                success: function(data) {
+                    console.log(data);
+                    setColor(data['bitmap'], 'demo1_block_');
+                    alert(JSON.stringify(data['ret']));
+                    const file_list = data['file_list'];
+                    const current_file_list = that.parent().parent().find('.file');
+                    if (data.ret && data.ret.indexOf('overwritten')) {
+                        that.parent().remove()
+                    }
+                    /*if (file_list.length !== current_file_list.length) {
+                        alert('The file ' + file_name + ' is to be deleted!');
+                        that.remove();
+                    }*/
+            }})
+        });
+    }
+    function initEvent() {
+        initDeleteEvent();
+        initReadFileEvent();
+        initAddEvent();
+    }
+    initDemo1Blocks();
+    initDemo2Blocks();
+    initEvent();
+</script>
+
+
+<script type="text/javascript">
+    const demo2_tfs_bitmap = [];
+    const demo2_nfs_bitmap = [];
+    function init_demo2_block_map() {
+        for (let i = 0; i < total_blocks; i++) {
+            demo2_nfs_bitmap.push(0);
+            demo2_tfs_bitmap.push(0);
+        }
+    }
+
+    function init_sock_fun() {
+        const sock_endpoint = 'http://localhost:63342';
+        var sock = new SockJS(sock_endpoint);
+        sock.onopen = function() {
+            console.log('open');
+            sock.send('test');
+        };
+
+        sock.onmessage = function(e) {
+            console.log('message', e.data);
+            sock.close();
+        };
+
+        sock.onclose = function() {
+            console.log('close');
+        };
+    }
+
+    function setBlockColor(selector, state) {
+         d3.select(selector)
+                    .transition().duration(1000).style('background-color', state_bgc_map[bit_state_map[state]]);
+    }
+
+    function set_blocks(items) {
+        console.log(items);
+        for (let i = 0; i < items.length - 1; i++) {
+            let item = items[i];
+            const tfs_diff = item['tfs_diff'];
+            const nfs_diff = item['nfs_diff'];
+            for (let j = 0; j < tfs_diff.length; j++) {
+                const blockIndex = tfs_diff[j][0];
+                const state = tfs_diff[j][1];
+                setTimeout(function () {
+                    setBlockColor('#demo2_tfs_block_' + blockIndex,state);
+                }, 100 * i);
+            }
+            for (let j = 0; j < nfs_diff.length; j++) {
+                const blockIndex = nfs_diff[j][0];
+                const state = nfs_diff[j][1];
+                setTimeout(function () {
+                    setBlockColor('#demo2_nfs_block_' + blockIndex, state);
+                }, 100 * i);
+            }
+        }
+    }
+
+    function initGoEvent() {
+        $('#demo2-go').click(function () {
+            let rate = $('#rate').val().trim();
+            if (rate === '') {
+                rate = 1.5
+            }
+            if (isNaN(Number.parseFloat(rate)) || parseFloat(rate) <= 0 || parseFloat(rate) > 10) {
+                alert('The rate is not valid');
+                return;
+            }
+            $.ajax({
+                url: base_url + '/2?rate=' + Number.parseFloat(rate),
+                type: 'get',
+                success: function(data) {
+                    set_blocks(data['items']);
+                    $('#demo2-go').show();
+                    $('#demo2-pause').hide();
+                }});
+            $('#demo2-go').hide();
+            $('#demo2-pause').show();
+        })
+    }
+    function initPauseEvent() {
+        $('#demo2-pause').click(function () {
+            $.ajax({
+                url: base_url + '/demo2/pause',
+                success: function(data) {
+                    $('#demo2-go').show();
+                    $('#demo2-pause').hide();
+                }});
+            $('#demo2-go').show();
+            $('#demo2-pause').hide();
+            d3.select('#demo2_block_61').transition().duration(1000).delay(1000).style('background-color', state_bgc_map['allocated']);
+            setTimeout(function () {
+                d3.select('#demo2_block_61').transition().duration(1000).delay(1000).style('background-color', state_bgc_map['transparent'])
+            }, 1000);
+        })
+    }
+    init_sock_fun();
+    initGoEvent();
+    initPauseEvent();
+    init_demo2_block_map();
+</script>
+</body>
+</html>
