@@ -8,6 +8,7 @@ from flask import Flask
 from flask import request, jsonify
 from fs.client import BatchFSWrapper
 import os
+
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 import config
@@ -41,12 +42,13 @@ def demo1_init():
 
 @app.route('/2')
 def demo2():
+    rate = float(request.args.get('rate', 1.5))
     tfs = TFS()
     nfs = NormalFS()
     fake = Faker()
     normal_set, contrib_set, all_set = set(), set(), set()
     fs = BatchFSWrapper([nfs, tfs])
-    weight = [1] * 3 + [2] * 2 + [3] * 0 + [4] + [5] + [6]
+    weight = [1] * int(10 * rate) + [2] * 10 + [3] * 0 + [4] * 5 + [5] * int(7 * rate) + [6] * 7
     bitmap_hist = []
     for _ in range(150):
         change = False
