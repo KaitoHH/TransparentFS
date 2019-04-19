@@ -74,14 +74,26 @@
         margin-right: 200px;
     }
     .file_list_container {
-        padding: 5px;
         margin-top: 40px;
+        width: 200px;
+        padding: 25px
     }
-    .file_list {
+    .demo2_log {
+        width: 200px;
+        margin-top: 40px;
+        padding: 25px;
+        display: none
+    }
+    .file_list,.log_list {
         border: 1px solid gray;
-        height: 300px;
         margin-bottom: 20px;
         overflow: auto;
+    }
+    .file_list {
+        height: 300px;
+    }
+    .log_list {
+        height: 550px;
     }
 
     .file_list .file {
@@ -104,18 +116,27 @@
         flex-direction: row;
         justify-content: space-between;
     }
+
     .file_list .header .file_add {
         padding: 5px;
     }
     .file_list .file_name {
         cursor: pointer;
     }
+    .event {
+        padding: 5px; display: flex; justify-content: space-between;
+
+    }
+    .event span {
+        margin-right: 5px;
+        border-bottom: 1px solid black;
+    }
 </style>
 <body>
 <div>
     <div class="my_contrainer" style="display: flex; flex-direction: row">
-        <div class="file_list_container" style="width: 200px; padding: 25px">
-            <div class="file_list tfs_list">
+        <div class="file_list_container" style="">
+                <div class="file_list tfs_list">
                 <div class="header" >
                     <div class="ui blue label" style="padding: 5px; margin: 5px">
                         TFS File
@@ -136,7 +157,7 @@
                     </div>-->
                 </div>
             </div>
-            <div class="file_list ufs_list">
+                <div class="file_list ufs_list">
                 <div class="header">
                     <div class="ui blue label" style="padding: 5px; margin: 5px">
                         User File
@@ -144,6 +165,17 @@
                     <div class="file_add">
                         <input type="text" id="ufs_input_block" class="file-block-input" style="width: 30px">
                         <i style="cursor: pointer" class="plus icon ufs_add"></i>
+                    </div>
+                </div>
+                <div class="body">
+                </div>
+            </div>
+        </div>
+        <div class="demo2_log" >
+            <div class="log_list" id="log_list" style="overflow: auto">
+                <div class="header" >
+                    <div class="ui blue label" style="padding: 5px; margin: 5px">
+                        Event Logs
                     </div>
                 </div>
                 <div class="body">
@@ -194,9 +226,17 @@
                     <button class="ui secondary button">Write</button>
                     <button class="ui button">Delete</button>
                 </div>-->
-                <div class="demo1 demo_box">
-                    <div id="file_blocks" class="file_blocks">
-
+                <div class="demo1 ">
+                    <div class=" demo_button_panel" style="margin-bottom: 10px">
+                        <div class="ui action input">
+                           <button id="demo_1_init" class="ui icon button blue">
+                               <i class="icon redo"></i>
+                           </button>
+                        </div>
+                        </div>
+                    <div class="demo_box">
+                        <div id="file_blocks" class="file_blocks">
+                        </div>
                     </div>
                 </div>
                 <div class="demo2" style="display: none" >
@@ -236,14 +276,15 @@
         crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.js"></script>
-<!--<script src="../static/sockjs.min.js"></script>-->
 <script type="text/javascript">
     $('#demo1_btn').click(function () {
         $('#demo2_btn').removeClass('active');
         $(this).addClass('active');
         $('.demo1').show(500);
         $('.demo2').hide(500);
-        $('.file_list_container').css({visibility:"visible", opacity: 0.0}).animate({opacity: 1.0},500);
+        $('.file_list_container').css({display:"block", opacity: 0.0}).animate({opacity: 1.0},500);
+        $('.demo2_log').css({display:"none", opacity: 0.0}).animate({opacity: 1.0},500);
+
     });
     $('#demo2_btn').click(function () {
         $('#demo1_btn').removeClass('active');
@@ -251,7 +292,10 @@
         $('.demo1').hide(500);
         $('.demo2').show(500);
         $('.file_list_container').animate({opacity: 0.0}, 500, function(){
-            $(this).css("visibility","hidden");
+            $(this).css("display","none");
+        });
+        $('.demo2_log').animate({opacity: 1.0}, 500, function(){
+            $(this).css("display","block");
         });
 
     });
@@ -408,31 +452,79 @@
                 success: function(data) {
                     console.log(data);
                     setColor(data['bitmap'], 'demo1_block_');
-                    alert(JSON.stringify(data['ret']));
-                    const file_list = data['file_list'];
-                    const current_file_list = that.parent().parent().find('.file');
-                    if (data.ret && data.ret.indexOf('overwritten')) {
-                        that.parent().remove()
+                    if (data.ret && data.ret.offset ===  undefined && data.ret.indexOf('overwritten')) {
+                        that.parent().remove();
+                        alert(JSON.stringify(data['ret']));
+                        return;
                     }
-                    /*if (file_list.length !== current_file_list.length) {
-                        alert('The file ' + file_name + ' is to be deleted!');
-                        that.remove();
-                    }*/
+                    const start_block = data['ret']['offset'];
+                    const end_block = start_block +  data['ret']['length'] - 1;
+                    alert(JSON.stringify(data['ret']));
+                    $('#demo1_block_' + start_block).css('border-left', '1px solid red');
+                    $('#demo1_block_' + end_block).css('border-right', '1px solid red');
+                    setTimeout(function () {
+                        $('#demo1_block_' + start_block).css('border-left', '');
+                        $('#demo1_block_' + end_block).css('border-right', '1px solid gray');
+                    }, 1000);
             }})
+        });
+    }
+
+    function init_file_info() {
+        $.ajax({
+                url: base_url + '/1/init',
+                type: 'get',
+                success: function(data) {
+                    setColor(data['bitmap'], 'demo1_block_');
+                    console.log(data);
+                    for (const file_name in data['file_list']) {
+                        global_file_id = (Number.parseInt(file_name.split('_')[2]) + 1) > global_file_id ? Number.parseInt(file_name.split('_')[2]) + 1 :global_file_id;
+                        $('.tfs_list .body').append(construct_file_ele(file_name,
+                            file_name));
+                    }
+                    initReadFileEvent();
+                    initDeleteEvent();
+                }
+    });
+    }
+
+    function initResetEvent() {
+        $('#demo_1_init').click(function () {
+            $.ajax({
+                url: base_url + '/1',
+                type: 'post',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({
+                    method: 'clear',
+                    args: {
+                    }
+                }),
+                success: function(data) {
+                    setColor(data['bitmap'], 'demo1_block_');
+                    console.log(data);
+                    $('.file').remove();
+                    global_file_id = 1;
+                }
+            })
         });
     }
     function initEvent() {
         initDeleteEvent();
         initReadFileEvent();
         initAddEvent();
+        initResetEvent();
     }
     initDemo1Blocks();
     initDemo2Blocks();
     initEvent();
+    init_file_info();
 </script>
 
 
 <script type="text/javascript">
+    let timeInterval = 100;
+    let transitionTime = 1000;
     let demo2_tfs_finnal_diff = [];
     let demo2_nfs_finnal_diff = [];
 
@@ -446,23 +538,39 @@
 
     function setBlockColor(selector, state) {
          d3.select(selector)
-                    .transition().duration(1000).style('background-color', state_bgc_map[bit_state_map[state]]);
+                    .transition().duration(transitionTime).style('background-color', state_bgc_map[bit_state_map[state]]);
+    }
+
+    function addEventToLog(event) {
+        /*let log = $('<div class="event" >\n' +
+            '<span>' + event['method'] + '</span>\n' +
+            '<span>' + event['args'][0] + '</span>\n' +
+            '<span>' + event['args'][1] ? event['args'][1] : '' + '</span>\n' +
+            '</div>')*/
+        let log = $('<span  class="event"><span>' +  event['method'] +'</span><span>'
+            + event['args'][0]  + '</span><span>' + (event['args'][1] ? event['args'][1] : '') + '</span></div>');
+        $('.demo2_log .body').append(log);
     }
 
     function set_blocks(items) {
-        console.log(items);
         demo2_tfs_finnal_diff = items[items.length -1]['tfs_diff'];
         demo2_nfs_finnal_diff = items[items.length -1]['nfs_diff'];
         for (let i = 0; i < items.length - 1; i++) {
             let item = items[i];
             const tfs_diff = item['tfs_diff'];
             const nfs_diff = item['nfs_diff'];
+            const event = item['event'];
             for (let j = 0; j < tfs_diff.length; j++) {
                 const blockIndex = tfs_diff[j][0];
                 const state = tfs_diff[j][1];
                 setTimeout(function () {
                     setBlockColor('#demo2_tfs_block_' + blockIndex,state);
-                }, 100 * i);
+                }, timeInterval * i);
+                setTimeout(function () {
+                    addEventToLog(event);
+                    var ele = document.getElementById('log_list');
+                    ele.scrollTop = ele.scrollHeight;
+                }, transitionTime + timeInterval * i)
             }
             for (let j = 0; j < nfs_diff.length; j++) {
                 const blockIndex = nfs_diff[j][0];
@@ -474,12 +582,12 @@
         }
         setTimeout(function () {
         $('#clear_all').attr('disabled', false);
-
         }, 100 * items.length)
     }
 
     function initClearEvent() {
         $('#clear_all').click(function () {
+            $('.event').remove();
             for (let j = 0; j < demo2_tfs_finnal_diff.length; j++) {
                 const blockIndex = demo2_tfs_finnal_diff[j][0];
                 const state = demo2_tfs_finnal_diff[j][1];
@@ -510,8 +618,10 @@
                 type: 'get',
                 success: function(data) {
                     set_blocks(data['items']);
-                    $('#demo2-go').show();
-                    $('#demo2-pause').hide();
+                    setTimeout(function () {
+                        $('#demo2-go').show();
+                        $('#demo2-pause').hide();
+                        }, timeInterval *  data['items'].length);
                 }});
             $('#demo2-go').hide();
             $('#demo2-pause').show();

@@ -43,6 +43,12 @@ def demo1():
     return jsonify({'ret': ret, 'bitmap': tfs.bitmap, 'file_list': tfs.to_json(tfs.file_list)})
 
 
+@app.route('/1/init', methods=['GET'])
+def demo1_init():
+    tfs = get_session_tfs()
+    return jsonify({'ret': None, 'bitmap': tfs.bitmap, 'file_list': tfs.to_json(tfs.file_list)})
+
+
 @app.route('/2')
 def demo2():
     rate = float(request.args.get('rate', 1.5))
