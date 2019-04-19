@@ -479,7 +479,8 @@
                     console.log(data);
                     for (const file_name in data['file_list']) {
                         global_file_id = (Number.parseInt(file_name.split('_')[2]) + 1) > global_file_id ? Number.parseInt(file_name.split('_')[2]) + 1 :global_file_id;
-                        $('.tfs_list .body').append(construct_file_ele(file_name,
+                        const list = data['file_list'][file_name]['type'] === 1 ? $('.tfs_list .body') : $('.ufs_list .body');
+                        list.append(construct_file_ele(file_name,
                             file_name));
                     }
                     initReadFileEvent();
@@ -560,17 +561,17 @@
             const tfs_diff = item['tfs_diff'];
             const nfs_diff = item['nfs_diff'];
             const event = item['event'];
+            setTimeout(function () {
+                    addEventToLog(event);
+                    var ele = document.getElementById('log_list');
+                    ele.scrollTop = ele.scrollHeight;
+                }, transitionTime / 2 + timeInterval * i);
             for (let j = 0; j < tfs_diff.length; j++) {
                 const blockIndex = tfs_diff[j][0];
                 const state = tfs_diff[j][1];
                 setTimeout(function () {
                     setBlockColor('#demo2_tfs_block_' + blockIndex,state);
                 }, timeInterval * i);
-                setTimeout(function () {
-                    addEventToLog(event);
-                    var ele = document.getElementById('log_list');
-                    ele.scrollTop = ele.scrollHeight;
-                }, transitionTime + timeInterval * i)
             }
             for (let j = 0; j < nfs_diff.length; j++) {
                 const blockIndex = nfs_diff[j][0];
@@ -587,7 +588,6 @@
 
     function initClearEvent() {
         $('#clear_all').click(function () {
-            $('.event').remove();
             for (let j = 0; j < demo2_tfs_finnal_diff.length; j++) {
                 const blockIndex = demo2_tfs_finnal_diff[j][0];
                 const state = demo2_tfs_finnal_diff[j][1];
@@ -604,6 +604,7 @@
 
     function initGoEvent() {
         $('#demo2-go').click(function () {
+            $('.event').remove();
             let rate = $('#rate').val().trim();
             if (rate === '') {
                 rate = 1.5
