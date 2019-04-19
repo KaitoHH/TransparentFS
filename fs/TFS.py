@@ -110,10 +110,14 @@ class TFS(BaseFS):
         else:
             return 'file does not exist.'
 
-    def view_top_n_status(self, n):
+    def view_top_n_status(self, n=config.block_numbers):
         for pos in range(n):
             print(self.bitmap[pos], end='')
         print()
+
+    def clear(self):
+        self.bitmap = [TFS.FREE] * config.block_numbers
+        self.file_list = {}
 
 
 class TFSFileStateMachine(object):

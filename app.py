@@ -4,17 +4,28 @@ import random
 from faker import Faker
 from flask import Flask
 from flask import render_template
-from flask import request, jsonify
+from flask import request, jsonify, session
 
 import config
+import jsonpickle
 from fs.NormalFS import NormalFS
 from fs.TFS import TFS
 from fs.client import BatchFSWrapper
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
+fake = Faker()
 app = Flask(__name__)
-tfs_1 = TFS()
+app.config['SECRET_KEY'] = fake.uuid4()
+
+
+def get_session_tfs():
+    tfs = session.get('tfs', None)
+    if tfs:
+        tfs = jsonpickle.decode(tfs)
+    else:
+        tfs = TFS()
+    return tfs
 
 
 @app.route('/')
@@ -24,17 +35,12 @@ def index():
 
 @app.route('/1', methods=['POST'])
 def demo1():
+    tfs = get_session_tfs()
     json = request.json
-    f = tfs_1.__getattribute__(json['method'])
+    f = tfs.__getattribute__(json['method'])
     ret = f(**json['args'])
-    return jsonify({'ret': ret, 'bitmap': tfs_1.bitmap, 'file_list': tfs_1.to_json(tfs_1.file_list)})
-
-
-@app.route('/1/init')
-def demo1_init():
-    global tfs_1
-    tfs_1 = TFS()
-    return jsonify({'bitmap': tfs_1.bitmap, 'file_list': tfs_1.to_json(tfs_1.file_list)})
+    session['tfs'] = jsonpickle.encode(tfs)
+    return jsonify({'ret': ret, 'bitmap': tfs.bitmap, 'file_list': tfs.to_json(tfs.file_list)})
 
 
 @app.route('/2')
@@ -42,7 +48,6 @@ def demo2():
     rate = float(request.args.get('rate', 1.5))
     tfs = TFS()
     nfs = NormalFS()
-    fake = Faker()
     normal_set, contrib_set, all_set = set(), set(), set()
     fs = BatchFSWrapper([nfs, tfs])
     weight = [1] * int(10 * rate) + [2] * 10 + [3] * 0 + [4] * 5 + [5] * int(5 * rate) + [6] * 5
