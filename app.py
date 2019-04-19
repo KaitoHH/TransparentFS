@@ -1,20 +1,17 @@
-from flask import Flask, render_template
-from fs.TFS import TFS
-from fs.NormalFS import NormalFS
+import os
 import random
 
 from faker import Faker
 from flask import Flask
+from flask import render_template
 from flask import request, jsonify
-from fs.client import BatchFSWrapper
-import os
-
-root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 import config
 from fs.NormalFS import NormalFS
 from fs.TFS import TFS
 from fs.client import BatchFSWrapper
+
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 app = Flask(__name__)
 tfs_1 = TFS()
@@ -48,9 +45,9 @@ def demo2():
     fake = Faker()
     normal_set, contrib_set, all_set = set(), set(), set()
     fs = BatchFSWrapper([nfs, tfs])
-    weight = [1] * int(10 * rate) + [2] * 10 + [3] * 0 + [4] * 5 + [5] * int(7 * rate) + [6] * 7
+    weight = [1] * int(10 * rate) + [2] * 10 + [3] * 0 + [4] * 5 + [5] * int(5 * rate) + [6] * 5
     bitmap_hist = []
-    for _ in range(150):
+    for _ in range(300):
         change = False
         ins = random.choice(weight)
         tfs_old = tfs.bitmap.copy()
@@ -60,7 +57,7 @@ def demo2():
             while name in all_set:
                 name = fake.file_name()
             try:
-                fs.add_normal_file(name, random.randint(1, 5))
+                fs.add_normal_file(name, int(max(0, random.gauss(8, 4))))
                 normal_set.add(name)
                 all_set.add(name)
                 change = True
@@ -71,7 +68,7 @@ def demo2():
             while name in all_set:
                 name = fake.file_name()
             try:
-                fs.add_contrib_file(name, random.randint(1, 5))
+                fs.add_contrib_file(name, int(max(0, random.gauss(6, 3))))
                 contrib_set.add(name)
                 all_set.add(name)
                 change = True
