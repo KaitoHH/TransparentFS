@@ -206,6 +206,7 @@
                                    id="rate" type="number" step="0.1" min="0.1" max="10" >
                             <button id="demo2-go" class="ui icon button green"><i class="icon play"></i></button>
                             <button style="display: none" id="demo2-pause" class="ui icon button blue"><i class="icon pause"></i> </button>
+                            <button id="clear_all" disabled class="ui icon button red"><i class="icon paint brush"></i> </button>
                         </div>
                         </div>
                     <div class="ui blue label" style="margin-bottom: 5px">
@@ -432,32 +433,16 @@
 
 
 <script type="text/javascript">
-    const demo2_tfs_bitmap = [];
-    const demo2_nfs_bitmap = [];
-    function init_demo2_block_map() {
-        for (let i = 0; i < total_blocks; i++) {
-            demo2_nfs_bitmap.push(0);
-            demo2_tfs_bitmap.push(0);
+    let demo2_tfs_finnal_diff = [];
+    let demo2_nfs_finnal_diff = [];
+
+    function resetBlocks() {
+        for (var i = 0; i < total_blocks; i++) {
+            d3.select('#demo2_tfs_block_' + i).style('background-color', state_bgc_map[0]);
+            d3.select('#demo2_nfs_block_' + i).style('background-color', state_bgc_map[0]);
         }
     }
 
-    function init_sock_fun() {
-        const sock_endpoint = 'http://localhost:63342';
-        var sock = new SockJS(sock_endpoint);
-        sock.onopen = function() {
-            console.log('open');
-            sock.send('test');
-        };
-
-        sock.onmessage = function(e) {
-            console.log('message', e.data);
-            sock.close();
-        };
-
-        sock.onclose = function() {
-            console.log('close');
-        };
-    }
 
     function setBlockColor(selector, state) {
          d3.select(selector)
@@ -466,6 +451,8 @@
 
     function set_blocks(items) {
         console.log(items);
+        demo2_tfs_finnal_diff = items[items.length -1]['tfs_diff'];
+        demo2_nfs_finnal_diff = items[items.length -1]['nfs_diff'];
         for (let i = 0; i < items.length - 1; i++) {
             let item = items[i];
             const tfs_diff = item['tfs_diff'];
@@ -485,7 +472,27 @@
                 }, 100 * i);
             }
         }
+        setTimeout(function () {
+        $('#clear_all').attr('disabled', false);
+
+        }, 100 * items.length)
     }
+
+    function initClearEvent() {
+        $('#clear_all').click(function () {
+            for (let j = 0; j < demo2_tfs_finnal_diff.length; j++) {
+                const blockIndex = demo2_tfs_finnal_diff[j][0];
+                const state = demo2_tfs_finnal_diff[j][1];
+                setBlockColor('#demo2_tfs_block_' + blockIndex,state);
+            }
+            for (let j = 0; j < demo2_nfs_finnal_diff.length; j++) {
+                const blockIndex = demo2_nfs_finnal_diff[j][0];
+                const state = demo2_nfs_finnal_diff[j][1];
+                setBlockColor('#demo2_nfs_block_' + blockIndex,state);
+            }
+        });
+    }
+
 
     function initGoEvent() {
         $('#demo2-go').click(function () {
@@ -497,6 +504,7 @@
                 alert('The rate is not valid');
                 return;
             }
+            resetBlocks();
             $.ajax({
                 url: base_url + '/2?rate=' + Number.parseFloat(rate),
                 type: 'get',
@@ -525,10 +533,9 @@
             }, 1000);
         })
     }
-    init_sock_fun();
     initGoEvent();
     initPauseEvent();
-    init_demo2_block_map();
+    initClearEvent();
 </script>
 </body>
 </html>
